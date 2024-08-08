@@ -1,0 +1,12 @@
+{
+  "Author": "PixelByte64",
+  "Name": "Tax Collector Plugin",
+  "Punchline": "Go collect your taxes",
+  "Description": "Tells you which city-state has the lowest tax and if your retainers are in the correct location.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "ratiner",
+    "plugin",
+    "taxes"
+  ]
+}

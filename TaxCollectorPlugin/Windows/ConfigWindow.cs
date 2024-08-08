@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
+using TaxCollectorPlugin;
 
-namespace SamplePlugin.Windows;
+namespace TaxCollectorPlugin.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {

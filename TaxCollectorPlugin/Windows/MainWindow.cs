@@ -1,12 +1,13 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
+using TaxCollectorPlugin;
 
-namespace SamplePlugin.Windows;
+namespace TaxCollectorPlugin.Windows;
 
 public class MainWindow : Window, IDisposable
 {
