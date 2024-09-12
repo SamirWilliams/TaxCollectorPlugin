@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -8,16 +9,13 @@ namespace TaxCollectorPlugin.Helpers
 {
     public class UniversalisClient : IDisposable
     {
-        private readonly TCPlugin Plugin;
-
         private static readonly HttpClient Client = new();
 
-        public static async Task<string> GetTaxRates(string world) {
+        public static async Task<Dictionary<string, int>> GetTaxRates(string world) {
             try
             {
                 // Define the API endpoint with the world parameter
                 string url = $"https://universalis.app/api/v2/tax-rates?world={world}";
-                //string url = $"https://universalis.app/api/v2/tax-rates?world=leviathan";
 
                 // Send GET request
                 HttpResponseMessage response = await Client.GetAsync(url);
@@ -26,22 +24,26 @@ namespace TaxCollectorPlugin.Helpers
                 // Get the response content as a string
                 string responseBody = await response.Content.ReadAsStringAsync();
 
-                // Optionally, you can parse the JSON response if you want specific fields
+                // Parse the JSON response
                 var jsonDocument = JsonDocument.Parse(responseBody);
 
-                // Example: extract some fields (you can customize this to fit your needs)
-                string formattedResponse = jsonDocument.RootElement.ToString();
+                // Extract tax rates into a dictionary
+                var taxRates = new Dictionary<string, int>();
 
-                // Return the formatted string
-                return formattedResponse;
+                foreach (var property in jsonDocument.RootElement.EnumerateObject())
+                {
+                    // Add each city and its tax rate to the dictionary
+                    taxRates[property.Name] = property.Value.GetInt32();
+                }
 
-                // If you want to extract specific fields, you can do so like this:
-                // string taxRate = jsonDocument.RootElement.GetProperty("taxRate").ToString();
-                // Console.WriteLine($"Tax Rate: {taxRate}");
+                // Return the dictionary of tax rates
+                return taxRates;
             }
             catch (HttpRequestException e)
             {
-                return $"Request error: {e.Message}";
+                // Handle the error by returning an empty dictionary or logging it
+                Console.WriteLine("Sending empty dictionary, something went wrong. " + e.Message);
+                return new Dictionary<string, int>(); // Empty dictionary on error
             }
         }
 

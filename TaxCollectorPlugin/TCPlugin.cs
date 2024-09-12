@@ -7,6 +7,7 @@ using Dalamud.Plugin.Services;
 using Dalamud.Game.ClientState.Objects.Enums;
 using TaxCollectorPlugin.Windows;
 using TaxCollectorPlugin.Helpers;
+using System.Collections.Generic;
 
 namespace TaxCollectorPlugin;
 
@@ -25,26 +26,32 @@ public class TCPlugin : IDalamudPlugin
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
 
-    public TCPlugin(IClientState clientState)
+    public TCPlugin()
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
         // you might normally want to embed resources and load them from the manifest stream
-        //var goatImagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
+        var iconPaths = new Dictionary<string, string>
+        {
+            { "Limsa Lominsa", Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "Icons", "Limsa_Icon.png") },
+            { "Gridania", Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "Icons", "Gridania_Icon.png") },
+            { "Ul'dah", Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "Icons", "Uldah_Icon.png") },
+            { "Ishgard", Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "Icons", "Ishgard_Icon.png") },
+            { "Kugane", Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "Icons", "Kugane_Icon.png") },
+            { "Crystarium", Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "Icons", "Crystarium_Icon.png") },
+            { "Old Sharlayan", Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "Icons", "Sharlayan_Icon.png") },
+            { "Tuliyollal", Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "Icons", "Tuliyollal_Icon.png") }
+        };
 
         ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(this);
+        MainWindow = new MainWindow(this,ClientState, iconPaths);
 
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
-        
-        ClientState = clientState;
-
-        var localplayer = clientState.LocalPlayer.CurrentWorld.ToString;
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
-            HelpMessage = localplayer + "Toggles main tax collector window"
+            HelpMessage = "Toggles main tax collector window"
         });
 
         PluginInterface.UiBuilder.Draw += DrawUI;
