@@ -4,9 +4,7 @@ using Dalamud.Plugin;
 using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using Dalamud.Game.ClientState.Objects.Enums;
 using TaxCollectorPlugin.Windows;
-using TaxCollectorPlugin.Helpers;
 using System.Collections.Generic;
 
 namespace TaxCollectorPlugin;

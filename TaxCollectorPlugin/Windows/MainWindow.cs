@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Dalamud.Interface.Internal;
-using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using ImGuiNET;
-using TaxCollectorPlugin;
 using TaxCollectorPlugin.Helpers;
 
 namespace TaxCollectorPlugin.Windows;
@@ -18,8 +15,8 @@ public class MainWindow : Window, IDisposable
     private IClientState clientState;
     private Dictionary<string, string> iconPaths;
     private Dictionary<string, int> taxRates;
-    private string homeWorld;
-    private string currentWorld;
+    private string homeWorld = "";
+    private string currentWorld = "";
     private int buttonPressChecker = 0;
 
     // We give this window a hidden ID using ##
@@ -42,7 +39,7 @@ public class MainWindow : Window, IDisposable
             homeWorld = "Unknown Home World";
         }
         
-        getTaxRates(homeWorld);
+        taxRates = getTaxRates(homeWorld);
 
     }
 
@@ -68,60 +65,72 @@ public class MainWindow : Window, IDisposable
             ImGui.Text($"Current Tax Rates are from {currentWorld}");
         }
 
-        if (ImGui.BeginTable("table1", 3))
+        ImGui.Spacing();
+
+        if (taxRates.Count == 0)
         {
-            ImGui.TableSetupColumn("one", ImGuiTableColumnFlags.WidthFixed, 22.0f);
-            ImGui.TableSetupColumn("two", ImGuiTableColumnFlags.WidthFixed, 100.0f);
-            ImGui.TableSetupColumn("three", ImGuiTableColumnFlags.WidthFixed, 200.0f);
-            foreach (var entry in taxRates)
+            ImGui.Text("Universalis API is Down");
+        }
+        else
+        {
+            if (ImGui.BeginTable("table1", 3))
             {
-                ImGui.TableNextRow();
+                ImGui.TableSetupColumn("one", ImGuiTableColumnFlags.WidthFixed, 22.0f);
+                ImGui.TableSetupColumn("two", ImGuiTableColumnFlags.WidthFixed, 100.0f);
+                ImGui.TableSetupColumn("three", ImGuiTableColumnFlags.WidthFixed, 200.0f);
 
-                // Try to get the icon path for the current city (entry.Key) from the iconPaths dictionary
-                if (iconPaths.TryGetValue(entry.Key, out var iconPath))
+                foreach (var entry in taxRates)
                 {
-                    // Now check if the iconPath is not null
-                    if (iconPath != null)
-                    {
-                        // Load the image from the path
-                        var iconImage = TCPlugin.TextureProvider.GetFromFile(iconPath).GetWrapOrDefault();
+                    ImGui.TableNextRow();
 
-                        // Check if the image was successfully loaded
-                        if (iconImage != null)
+                    // Try to get the icon path for the current city (entry.Key) from the iconPaths dictionary
+                    if (iconPaths.TryGetValue(entry.Key, out var iconPath))
+                    {
+                        // Now check if the iconPath is not null
+                        if (iconPath != null)
                         {
-                            ImGui.TableNextColumn();                           
-                            ImGui.Image(iconImage.ImGuiHandle, new Vector2(iconImage.Width, iconImage.Height));
+                            // Load the image from the path
+                            var iconImage = TCPlugin.TextureProvider.GetFromFile(iconPath).GetWrapOrDefault();
+
+                            // Check if the image was successfully loaded
+                            if (iconImage != null)
+                            {
+                                ImGui.TableNextColumn();
+                                ImGui.Image(iconImage.ImGuiHandle, new Vector2(iconImage.Width, iconImage.Height));
+                            }
+                            else
+                            {
+                                // Handle the case where the image failed to load
+                                ImGui.TableNextColumn();
+                                ImGui.Text("Image failed to load");
+                            }
                         }
                         else
                         {
-                            // Handle the case where the image failed to load
+                            // Handle the case where iconPath is null
                             ImGui.TableNextColumn();
-                            ImGui.Text("Image failed to load");
+                            ImGui.Text("Icon path is null");
                         }
                     }
                     else
                     {
-                        // Handle the case where iconPath is null
+                        // Handle the case where the key is not found in the iconPaths dictionary
                         ImGui.TableNextColumn();
-                        ImGui.Text("Icon path is null");
+                        ImGui.Text("No Image");
                     }
-                }
-                else
-                {
-                    // Handle the case where the key is not found in the iconPaths dictionary
+
+                    // Display the city name and tax rate
                     ImGui.TableNextColumn();
-                    ImGui.Text("No Image");
+                    ImGui.Text($"{entry.Key}: ");
+
+                    ImGui.TableNextColumn();
+                    ImGui.Text($"{entry.Value}%%");
                 }
-
-                // Display the city name and tax rate
-                ImGui.TableNextColumn();
-                ImGui.Text($"{entry.Key}: ");
-
-                ImGui.TableNextColumn();
-                ImGui.Text($"{entry.Value}%%");
+                ImGui.EndTable();
             }
-            ImGui.EndTable();
         }
+
+        ImGui.Spacing();
 
         if (ImGui.Button("Update Tax Rates to Home World"))
         {
@@ -135,13 +144,13 @@ public class MainWindow : Window, IDisposable
         {
             getTaxRates(currentWorld);
             buttonPressChecker = 1;
-}
+        }
 
     }
 
-    private void getTaxRates(string world) {
+    private Dictionary<string, int> getTaxRates(string world) {
 
-        taxRates = UniversalisClient.GetTaxRates(world).GetResultSafely();
+        return UniversalisClient.GetTaxRates(world).GetResultSafely();
 
     }
 
